@@ -158,6 +158,13 @@ export default function HomeScreen() {
 
   const quickActions = [
     {
+      icon: 'sparkles',
+      title: 'Assistant IA',
+      subtitle: 'Conseils personnalisés',
+      onPress: () => router.push('/ai-assistant'),
+      featured: true,
+    },
+    {
       icon: 'storefront',
       title: 'Boutique',
       subtitle: 'Tous nos produits',
@@ -225,10 +232,36 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Services</Text>
           <View style={styles.actionsGrid}>
             {quickActions.map((action, index) => (
-              <TouchableOpacity key={index} style={styles.actionCard} onPress={action.onPress}>
-                <Icon name={action.icon} size={24} color={colors.primary} />
-                <Text style={styles.actionTitle}>{action.title}</Text>
-                <Text style={styles.actionSubtitle}>{action.subtitle}</Text>
+              <TouchableOpacity 
+                key={index} 
+                style={[
+                  styles.actionCard,
+                  action.featured && styles.featuredActionCard
+                ]} 
+                onPress={action.onPress}
+              >
+                <Icon 
+                  name={action.icon} 
+                  size={24} 
+                  color={action.featured ? colors.white : colors.primary} 
+                />
+                <Text style={[
+                  styles.actionTitle,
+                  action.featured && styles.featuredActionTitle
+                ]}>
+                  {action.title}
+                </Text>
+                <Text style={[
+                  styles.actionSubtitle,
+                  action.featured && styles.featuredActionSubtitle
+                ]}>
+                  {action.subtitle}
+                </Text>
+                {action.featured && (
+                  <View style={styles.featuredBadge}>
+                    <Text style={styles.featuredBadgeText}>NOUVEAU</Text>
+                  </View>
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -345,6 +378,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
+    position: 'relative',
+  },
+  featuredActionCard: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+    ...commonStyles.shadow,
   },
   actionTitle: {
     fontSize: 14,
@@ -357,6 +396,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  featuredActionTitle: {
+    color: colors.white,
+  },
+  featuredActionSubtitle: {
+    color: colors.white + '80',
+  },
+  featuredBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: colors.success,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  featuredBadgeText: {
+    fontSize: 8,
+    fontWeight: '700',
+    color: colors.white,
   },
   categoriesContainer: {
     paddingHorizontal: 16,

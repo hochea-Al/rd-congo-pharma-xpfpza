@@ -5,6 +5,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, commonStyles, buttonStyles } from '../../styles/commonStyles';
 import { useCart } from '../../hooks/useCart';
+import { useAITracking } from '../../hooks/useAITracking';
 import Icon from '../../components/Icon';
 import { supabase } from '../integrations/supabase/client';
 
@@ -29,6 +30,7 @@ export default function ProductDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { addToCart } = useCart();
+  const { trackProductView, trackAddToCart } = useAITracking();
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -61,6 +63,13 @@ export default function ProductDetailScreen() {
       }
 
       setProduct(data);
+      
+      // Track product view for AI recommendations
+      trackProductView(data.id, {
+        category: data.categories?.name,
+        price: data.price,
+        rating: data.rating
+      });
     } catch (error) {
       console.log('Product fetch exception:', error);
       Alert.alert('Erreur', 'Une erreur est survenue');
@@ -94,6 +103,14 @@ export default function ProductDetailScreen() {
         reviews: product.reviews,
       });
     }
+
+    // Track add to cart for AI recommendations
+    trackAddToCart(product.id, {
+      quantity,
+      category: product.categories?.name,
+      price: product.price,
+      total: product.price * quantity
+    });
 
     Alert.alert(
       'Ajouté au panier!',

@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { colors, commonStyles, buttonStyles } from '../styles/commonStyles';
 import { supabase } from './integrations/supabase/client';
 import Icon from '../components/Icon';
+import AIInsights from '../components/AIInsights';
 
 interface Profile {
   id: string;
@@ -146,6 +147,13 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
+    {
+      icon: 'sparkles',
+      title: 'Assistant IA',
+      subtitle: 'Conseils personnalisés et insights',
+      onPress: () => router.push('/ai-assistant'),
+      featured: true,
+    },
     {
       icon: 'bag',
       title: 'Mes commandes',
@@ -322,17 +330,54 @@ export default function ProfileScreen() {
           </View>
         )}
 
+        {/* AI Insights */}
+        {!editing && user && (
+          <View style={styles.aiInsightsContainer}>
+            <AIInsights />
+          </View>
+        )}
+
         {/* Menu Items */}
         {!editing && (
           <View style={styles.menu}>
             {menuItems.map((item, index) => (
-              <TouchableOpacity key={index} style={styles.menuItem} onPress={item.onPress}>
-                <Icon name={item.icon} size={24} color={colors.primary} />
+              <TouchableOpacity 
+                key={index} 
+                style={[
+                  styles.menuItem,
+                  item.featured && styles.featuredMenuItem
+                ]} 
+                onPress={item.onPress}
+              >
+                <Icon 
+                  name={item.icon} 
+                  size={24} 
+                  color={item.featured ? colors.white : colors.primary} 
+                />
                 <View style={styles.menuItemContent}>
-                  <Text style={styles.menuItemTitle}>{item.title}</Text>
-                  <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
+                  <Text style={[
+                    styles.menuItemTitle,
+                    item.featured && styles.featuredMenuItemTitle
+                  ]}>
+                    {item.title}
+                  </Text>
+                  <Text style={[
+                    styles.menuItemSubtitle,
+                    item.featured && styles.featuredMenuItemSubtitle
+                  ]}>
+                    {item.subtitle}
+                  </Text>
                 </View>
-                <Icon name="chevron-forward" size={20} color={colors.textSecondary} />
+                <Icon 
+                  name="chevron-forward" 
+                  size={20} 
+                  color={item.featured ? colors.white : colors.textSecondary} 
+                />
+                {item.featured && (
+                  <View style={styles.featuredBadge}>
+                    <Text style={styles.featuredBadgeText}>IA</Text>
+                  </View>
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -495,5 +540,36 @@ const styles = StyleSheet.create({
   authButtons: {
     width: '100%',
     gap: 12,
+  },
+  aiInsightsContainer: {
+    margin: 16,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    overflow: 'hidden',
+    ...commonStyles.shadow,
+  },
+  featuredMenuItem: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  featuredMenuItemTitle: {
+    color: colors.white,
+  },
+  featuredMenuItemSubtitle: {
+    color: colors.white + '80',
+  },
+  featuredBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: colors.success,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  featuredBadgeText: {
+    fontSize: 8,
+    fontWeight: '700',
+    color: colors.white,
   },
 });

@@ -1,10 +1,11 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, ScrollView, FlatList, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { commonStyles, colors } from '../styles/commonStyles';
 import { useCart } from '../hooks/useCart';
+import { useAITracking } from '../hooks/useAITracking';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import ProductCard from '../components/ProductCard';
@@ -35,6 +36,7 @@ interface Category {
 export default function ShopScreen() {
   const router = useRouter();
   const { addToCart, getTotalItems } = useCart();
+  const { trackSearch, trackAddToCart } = useAITracking();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -114,6 +116,16 @@ export default function ShopScreen() {
 
   const handleAddToCart = (product: Product) => {
     console.log('Adding product to cart:', product.name);
+    
+    // Track add to cart for AI recommendations
+    trackAddToCart(product.id, {
+      source: 'shop_page',
+      category: (product as any).categories?.name,
+      price: product.price,
+      search_query: searchQuery || null,
+      selected_category: selectedCategory || null
+    });
+    
     addToCart({
       id: product.id,
       name: product.name,
@@ -132,6 +144,10 @@ export default function ShopScreen() {
   const handleCartPress = () => {
     console.log('Navigating to cart');
     router.push('/cart');
+  };
+
+  const handleAIPress = () => {
+    router.push('/ai-assistant');
   };
 
   const renderProduct = ({ item }: { item: Product }) => (
@@ -178,7 +194,15 @@ export default function ShopScreen() {
       {/* Search Bar */}
       <SearchBar
         value={searchQuery}
-        onChangeText={setSearchQuery}
+        onChangeText={(text) => {
+          setSearchQuery(text);
+          if (text.length > 2) {
+            trackSearch(text, {
+              source: 'shop_page',
+              selected_category: selectedCategory
+            });
+          }
+        }}
         placeholder="Rechercher des produits..."
       />
 
@@ -207,6 +231,11 @@ export default function ShopScreen() {
           </View>
         }
       />
+
+      {/* Floating AI Button */}
+      <TouchableOpacity style={styles.floatingAIButton} onPress={handleAIPress}>
+        <Icon name="sparkles" size={24} color={colors.white} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -258,5 +287,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  floatingAIButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...commonStyles.shadow,
+    elevation: 8,
   },
 });
